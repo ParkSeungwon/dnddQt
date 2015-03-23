@@ -26,7 +26,8 @@ using namespace std;
 
 QSqlError Mysqlquery::myQuery(std::string str)
 {
-    res = qdb.exec(str);
+    sqlQuery.exec(str);
+    record = sqlQuery.record();
     return qdb.lasterror();
 }
 

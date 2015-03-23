@@ -1,10 +1,11 @@
 class Mysqlquery 
 {
 private:
-    QSqlDatabase qdb;
+    static QSqlDatabase qdb;
+    static QSqlRecord record;
 
 protected:
-    QSqlQuery res;
+    static QSqlQuery sqlQuery;
     QSqlError myQuery(string str);
 
 public:
