@@ -1,7 +1,9 @@
-class Mysqlboard : public Board, public Mysqlquery 
+class Mysqlboard : public Board
 {
 private:
 	string addBackSlash(string s);
+	Mysqlquery *mysqlQuery;
+	
 protected:
 	int totalCommentCount;
 	
@@ -12,4 +14,5 @@ public:
     int getTotalCommentCount() {return totalCommentCount;}
     void showtables();
     string getTOC(string field, int num);
+    Mysqlboard(Mysqlquery *qQuery);
 };

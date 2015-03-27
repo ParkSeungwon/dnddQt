@@ -19,12 +19,17 @@
  */
 
  
-#include <QtSql/QSqlDatabase>
+#include <QtSql>
 using namespace std;
 #include "member.h"
 #include "mysqlquery.h"
 #include "mysqlmember.h"
 #include "util.h"
+
+MysqlMember::MysqlMember(Mysqlquery *qQuery)
+{
+	mysqlQuery = qQuery;
+}
 
 void MysqlMember::write() 
 {
@@ -35,20 +40,24 @@ void MysqlMember::write()
 	query += name + "', '";
 	query += tel + "', now());";
 	
-	myQuery(query);
+	mysqlQuery->myQuery(query);
 }
 
 bool MysqlMember::read(string _id) 
 {
 	string query = "select * from Users where email = '";
 	query += _id + "';";
-	myQuery(query);
-    if(sqlQuery.next()) {
+	mysqlQuery->myQuery(query);
+    if(mysqlQuery->sqlQuery.next()) {
         email = _id;
-        password = sqlQuery.value("password").toString();
-        level = (Level)sqlQuery.value("level").toInt();
-        name = sqlQuery.value("name").toString();
-        tel = sqlQuery.value("tel").toString();
+        int passcol = mysqlQuery->record.indexOf("password");
+        int namecol = mysqlQuery->record.indexOf("name");
+        int levelcol = mysqlQuery->record.indexOf("level");
+        int telcol = mysqlQuery->record.indexOf("tel");
+        password = mysqlQuery->sqlQuery.value(passcol).toString().toStdString();
+        level = (Level)mysqlQuery->sqlQuery.value(levelcol).toInt();
+        name = mysqlQuery->sqlQuery.value(namecol).toString().toStdString();
+        tel = mysqlQuery->sqlQuery.value(telcol).toString().toStdString();
         //follow = res->getString("follow");
         return true;
     }
@@ -61,17 +70,25 @@ bool MysqlMember::login(string user, string pass)
     query += user + "' order by date desc) as my_table_tmp group by email) as my_table_tmp" ;
     query +=  " where password=password('" + pass + "');";
     //std::cout << query << std::endl;
-    myQuery(query);
-    if(sqlQuery.next()) {
-        email = sqlQuery.value("email").toString();
-        password = sqlQuery.value("password").toString();
-        level = sqlQuery.value("level").toInt();
-        name = sqlQuery.value(record.indexOf("name")).toString();
-        tel = sqlQuery.value(record.indexOf("tel")).toString();
+    mysqlQuery->myQuery(query);
+    if(mysqlQuery->sqlQuery.next()) {
+        int passcol = mysqlQuery->record.indexOf("password");
+        int namecol = mysqlQuery->record.indexOf("name");
+        int levelcol = mysqlQuery->record.indexOf("level");
+        int telcol = mysqlQuery->record.indexOf("tel");
+        int emailcol = mysqlQuery->record.indexOf("email");
+        email = mysqlQuery->sqlQuery.value(emailcol).toString().toStdString();
+        password = mysqlQuery->sqlQuery.value(passcol).toString().toStdString();
+        level = (Level)mysqlQuery->sqlQuery.value(levelcol).toInt();
+        name = mysqlQuery->sqlQuery.value(namecol).toString().toStdString();
+        tel = mysqlQuery->sqlQuery.value(telcol).toString().toStdString();
         //follow = res->getString("follow");
         query = "select email from (select * from Follow where follower = '";
         query += email + "' order by date desc) as my_table_tmp group by follower;";
-        if(myQuery(query) && sqlQuery.next()) follow = sqlQuery.value("email").toString();
+        if(mysqlQuery->myQuery(query) && mysqlQuery->sqlQuery.next()) {
+            int emailcol = mysqlQuery->record.indexOf("email");
+            follow = mysqlQuery->sqlQuery.value(emailcol).toString().toStdString();
+        }
         return true;
     } else {
         email = "anony@anony";
@@ -86,8 +103,8 @@ bool MysqlMember::exist(string _email)
 {//almost same as read
 	string query = "select email from Users where email = '";
 	query += _email + "';";
-	myQuery(query);
-    if(sqlQuery.next()) return true;
+	mysqlQuery->myQuery(query);
+    if(mysqlQuery->sqlQuery.next()) return true;
 	else return false;
 }
 
@@ -96,7 +113,7 @@ bool MysqlMember::writeFollow(string email, string follower, bool secret)
     string query = "insert into Follow values('";
     query += email + "', '" + follower + "', " + Util::itos(secret) + ", now());";
     //std::cout << query << std::endl;
-    if(myQuery(query)) {
+    if(mysqlQuery->myQuery(query)) {
         follow = email;//return
         return true;
     }

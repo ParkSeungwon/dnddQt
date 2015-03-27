@@ -19,8 +19,10 @@ class MysqlVote : public Vote, public Mysqlquery
 private:
     int findMan(VoteResult *vr, int count, string email, int start);
     int findMan(FollowTable *ft, int count, string email, int start);
+	Mysqlquery *mysqlQuery;
     
 public:
+    MysqlVote(Mysqlquery *qQuery);
 	void write();
 	string calculateVote(int option); //토론 종료시 표결결과를 마지막페이지에 써넣는다. 그 텍스트.
 	string calculateVoteHtml(string field, int number, int option);

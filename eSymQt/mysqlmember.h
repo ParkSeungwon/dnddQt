@@ -1,6 +1,9 @@
-class MysqlMember : public Member, public Mysqlquery
+class MysqlMember : public Member
 {
- public:
+private:
+	Mysqlquery *mysqlQuery;
+public:
+    MysqlMember(Mysqlquery *qQuery);
 	bool read(string _id);//email주소를 아이디로 사용함.
 	void write();
 	bool exist(string _email);

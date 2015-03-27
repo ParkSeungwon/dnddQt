@@ -19,13 +19,19 @@
  */
 
  
-#include <QSqlDatabase>
+#include <QtSql>
+#include <iostream>
 using namespace std;
 #include "member.h"
 #include "comment.h"
 #include "mysqlquery.h"
 #include "mysqlboard.h"
 #include "util.h"
+
+Mysqlboard::Mysqlboard(Mysqlquery *qQuery)
+{
+	mysqlQuery = qQuery;
+}
 
 bool Mysqlboard::write(char option) //f,e만 유의
 {
@@ -46,8 +52,9 @@ bool Mysqlboard::write(char option) //f,e만 유의
 	if(option == 'e') str += "'" + getDate() + "', null);";
 	else str += "now(), null);";
 	//cout << str << endl;
-	return myQuery(str);
+	return mysqlQuery->myQuery(str);
 }
+
 string Mysqlboard::getTOC(string _field, int _num)
 {
 	setPage(_field, _num, 0);
@@ -65,27 +72,35 @@ string Mysqlboard::getTOC(string _field, int _num)
     query += " order by date, edit desc) as my_table_tmp";
     query += " where num = " + Util::itos(number);
     query += " group by page;";
-    myQuery(query);
+    mysqlQuery->myQuery(query);
     string toc = "\n<h2>Table of Contents</h2>\n\n";
-    while(res->next()) {
-        toc += res->getString("page") + ". ";
-        toc += res->getString("title") + "<br />\n";
+    while(mysqlQuery->sqlQuery.next()) {
+        int pagecol = mysqlQuery->record.indexOf("page");
+        int titlecol = mysqlQuery->record.indexOf("title");
+        toc += mysqlQuery->sqlQuery.value(pagecol).toString().toStdString() + ". ";
+        toc += mysqlQuery->sqlQuery.value(titlecol).toString().toStdString() + "<br />\n";
     }
     return s + toc;
 }
 
 void Mysqlboard::read()
 {
-	if(res->next()) {
+    if(mysqlQuery->sqlQuery.next()) {
 		if(field == "") {
-			setText(res->getString(1));	
+            setText(mysqlQuery->sqlQuery.value(1).toString().toStdString());
 		} else {
-			setNumber(res->getInt("num"));
-			setTitle(res->getString("title"));
-			setId (res->getString("email") );
-			setText (res->getString("contents") );
-			setDate (res->getString("date"));
-            setPages(res->getInt("page"));
+            int numcol = mysqlQuery->record.indexOf("num");
+            int titlecol = mysqlQuery->record.indexOf("title");
+            int emailcol = mysqlQuery->record.indexOf("email");
+            int contentscol = mysqlQuery->record.indexOf("contents");
+            int datecol = mysqlQuery->record.indexOf("date");
+            int pagecol = mysqlQuery->record.indexOf("page");
+            setNumber(mysqlQuery->sqlQuery.value(numcol).toInt());
+            setTitle(mysqlQuery->sqlQuery.value(titlecol).toString().toStdString());
+            setId (mysqlQuery->sqlQuery.value(emailcol).toString().toStdString());
+            setText (mysqlQuery->sqlQuery.value(contentscol).toString().toStdString());
+            setDate (mysqlQuery->sqlQuery.value(datecol).toString().toStdString());
+            setPages(mysqlQuery->sqlQuery.value(pagecol).toInt());
 		}
         //show();
 	}
@@ -116,13 +131,13 @@ size_t Mysqlboard::setPage(string _field, int _num, int _page)
         query += " as my_table_tmp group by date, email;";
 	} 
 	//cout << query << endl;
-	myQuery(query);
-    return res->rowsCount();
+    mysqlQuery->myQuery(query);
+    return mysqlQuery->sqlQuery.size();
 }
 
 void Mysqlboard::showtables() {
 	string query = "show tables;";
-	myQuery(query);
+	mysqlQuery->myQuery(query);
 }
 
 string Mysqlboard::addBackSlash(string s) {

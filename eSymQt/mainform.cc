@@ -26,7 +26,8 @@ GtkMainForm::GtkMainForm(int argc, char *argv[]) :
     item1("Database"), item2("Help"), subitem11("Connect"), subitem12("Option"),
     subitem13("Quit"), subitem21("Tutorial"),subitem22("Manual"),subitem23("About"),
     viewport1(*scrolledWindow2.get_hadjustment(), *scrolledWindow2.get_vadjustment()),
-	button1("Edit complete. Write to Database."), label1("Welcome!", Gtk::ALIGN_CENTER)
+	button1("Edit complete. Write to Database."), label1("Welcome!", Gtk::ALIGN_CENTER),
+	board(qQuery), member(qQuery), vote(qQuery)
 {
 	if(argc >= 3) {
 		user = argv[1];
@@ -137,9 +138,7 @@ void GtkMainForm::freeComments()
 
 bool GtkMainForm::openConnection(string host, string _user, string _pass, string db)
 {
-	if(board.connect(host, user, pass, db) &&
-       member.connect(host, user, pass, db) &&
-       vote.connect(host, user, pass, db) ) {
+	if(qQuery.connect(host, user, pass, db)) {
         member.login(_user, _pass);
         commentSetup("", 0, 0);
         label3.set_markup(" || <b>" + member.getName() + "</b>, <b>" + Util::Ltos(member.getLevel()) + "</b>");

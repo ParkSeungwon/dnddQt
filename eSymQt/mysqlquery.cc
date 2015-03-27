@@ -18,25 +18,27 @@
  * along with dndd. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QSqlDatabase>
-
+#include <QtSql>
+#include <QString>
 using namespace std;
 #include "mysqlquery.h"
 
 
-QSqlError Mysqlquery::myQuery(std::string str)
+bool Mysqlquery::myQuery(string str)
 {
-    sqlQuery.exec(str);
+    bool ok = sqlQuery.exec(QString::fromStdString(str));
     record = sqlQuery.record();
-    return qdb.lasterror();
+    return ok;
+    //record = sqlQuery.record();
+    //return qdb.lasterror();
 }
 
 bool Mysqlquery::connect(string host, string user, string pass, string database)
 {
     qdb = QSqlDatabase::addDatabase("QMYSQL");
-    qdb.setHostName(host);
-    qdb.setDatabaseName(database);
-    qdb.setUserName(user);
-    qdb.setPassword(pass);
+    qdb.setHostName(QString::fromStdString(host));
+    qdb.setDatabaseName(QString::fromStdString(database));
+    qdb.setUserName(QString::fromStdString(user));
+    qdb.setPassword(QString::fromStdString(pass));
     return qdb.open();
 }

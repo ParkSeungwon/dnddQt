@@ -58,12 +58,12 @@ class GtkMainForm : public Gtk::Window, public CommentInterface
     Mysqlboard board;
     MysqlMember member;
     MysqlVote vote;
+	Mysqlquery qQuery;
     auto_ptr<GtkWidget> webview;
     auto_ptr<ConnectPopup> connPopup;
     auto_ptr<NewBook> newbook;
     auto_ptr<FollowPopup> followPopup;
     auto_ptr<VotePopup> votePopup;
-    //auto_ptr<Progress> progress;
     auto_ptr<CommentPopup> commentpopup;
     auto_ptr<ChangeAccount> changeAccount;
     Gtk::MessageDialog* dialog1;
